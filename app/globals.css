@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ─── Page ─── */
+    --bg-page: #E8F5FF;              /* ice blue - main page background */
+    --bg-surface: #FFFFFF;            /* white - cards, modals, panels */
+    --bg-surface-hover: #D6ECFF;     /* slightly deeper ice blue - hover */
+
+    /* ─── Header & Footer (Prabha's Aari: ice blue + orange) ─── */
+    --bg-header: #E8F5FF;            /* ice blue — matches page */
+    --text-header: #0A2540;          /* deep navy for contrast on light */
+    --text-header-accent: #EE7E1A;   /* vibrant orange from logo */
+    --bg-footer-from: #D6ECFF;
+    --bg-footer-to: #E8F5FF;
+    --text-footer: #0A2540;
+    --text-footer-accent: #EE7E1A;
+
+    /* ─── Buttons ─── */
+    --bg-btn-primary: #EE7E1A;       /* logo orange */
+    --bg-btn-primary-hover: #C9651A;
+    --text-btn-primary: #FFFFFF;
+
+    /* ─── Text ─── */
+    --text-primary: #0A2540;          /* deep navy */
+    --text-secondary: #1F3A5F;        /* slate navy */
+    --text-tertiary: #4A6280;         /* muted navy */
+    --text-muted: #8399B3;            /* soft blue-gray */
+
+    /* ─── Borders ─── */
+    --border-default: #BFDBF7;        /* soft ice blue */
+    --border-strong: #9CC4EA;         /* stronger ice blue */
+
+    /* ─── Input ─── */
+    --bg-input: #FFFFFF;
+    --border-input: #BFDBF7;
+
+    /* ─── Accent ─── */
+    --color-accent: #EE7E1A;          /* logo orange */
+
+    /* ─── Legacy (kept for backwards compat) ─── */
+    --background: var(--bg-page);
+    --foreground: var(--text-primary);
+    --card-bg: var(--bg-surface);
+    --card-foreground: var(--text-primary);
+    --muted: var(--bg-surface-hover);
+    --muted-foreground: var(--text-tertiary);
+    --border: var(--border-default);
+    --ring: var(--bg-btn-primary);
+    --input: var(--border-input);
+  }
+
+  .dark {
+    /* ─── Page ─── */
+    --bg-page: #050B17;              /* near-black navy */
+    --bg-surface: #0F1A2E;            /* deep navy surface */
+    --bg-surface-hover: #172842;
+
+    /* ─── Header & Footer (deep navy + orange) ─── */
+    --bg-header: #0A1628;            /* rich dark navy */
+    --text-header: #FFF8ED;          /* warm cream text */
+    --text-header-accent: #FF9933;   /* vivid orange */
+    --bg-footer-from: #0A1628;
+    --bg-footer-to: #050B17;
+    --text-footer: #FFF8ED;
+    --text-footer-accent: #FF9933;
+
+    /* ─── Buttons ─── */
+    --bg-btn-primary: #EE7E1A;
+    --bg-btn-primary-hover: #FF9933;
+    --text-btn-primary: #FFFFFF;
+
+    /* ─── Text ─── */
+    --text-primary: #F1F5F9;
+    --text-secondary: #CBD5E1;
+    --text-tertiary: #94A3B8;
+    --text-muted: #64748B;
+
+    /* ─── Borders ─── */
+    --border-default: #1E3A5F;
+    --border-strong: #2D5080;
+
+    /* ─── Input ─── */
+    --bg-input: #0F1A2E;
+    --border-input: #2D5080;
+
+    /* ─── Accent ─── */
+    --color-accent: #FF9933;
+
+    /* ─── Legacy ─── */
+    --background: var(--bg-page);
+    --foreground: var(--text-primary);
+    --card-bg: var(--bg-surface);
+    --card-foreground: var(--text-primary);
+    --muted: var(--bg-surface-hover);
+    --muted-foreground: var(--text-tertiary);
+    --border: var(--border-default);
+    --ring: var(--bg-btn-primary);
+    --input: var(--border-input);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--bg-page);
+  }
+}
+
+@layer utilities {
+  .cursor-arrow-left {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Ccircle cx='18' cy='18' r='17' fill='rgba(0,0,0,0.45)' stroke='white' stroke-width='1.5'/%3E%3Cpath d='M21 12l-6 6 6 6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 18 18, w-resize;
+  }
+  .cursor-arrow-right {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Ccircle cx='18' cy='18' r='17' fill='rgba(0,0,0,0.45)' stroke='white' stroke-width='1.5'/%3E%3Cpath d='M15 12l6 6-6 6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 18 18, e-resize;
+  }
+
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Hide scrollbar for horizontal scroll containers */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

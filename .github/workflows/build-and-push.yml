@@ -1,0 +1,120 @@
+name: DevOps - Build & Push to ECR
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REPOSITORY: prabasaaridesigns
+  AWS_ACCOUNT_ID: "149536454380"
+  DEPLOY_REPO: kaaikani/platform-gitops
+  DEPLOY_BRANCH: main
+  VALUES_FILE: environments/production/prabasaari-values.yaml
+  IMAGE_KEY: ".app.image.tag"
+
+permissions:
+  contents: write
+  security-events: write
+
+jobs:
+  build:
+    name: Build & Scan
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.version.outputs.new_tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate semantic version
+        id: version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GIT_PAT }}
+          default_bump: patch
+          release_branches: main
+          tag_prefix: prabas-v
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          VERSION: ${{ steps.version.outputs.new_tag }}
+        run: |
+          echo "Building version: $VERSION"
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.version.outputs.new_tag }}
+          format: table
+          exit-code: 0
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          # Accepted, documented exceptions (see ./.trivyignore). Scan stays
+          # informational (exit-code: 0); this just suppresses known-and-triaged
+          # findings from the report. Remove once Next.js is on >= 15.5.16.
+          trivyignores: .trivyignore
+
+  deploy:
+    name: Update Helm Values (GitOps)
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout platform-gitops (ArgoCD source)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.DEPLOY_REPO }}
+          ref: ${{ env.DEPLOY_BRANCH }}
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Install yq
+        uses: mikefarah/yq@master
+
+      - name: Update image tag in Helm values
+        run: |
+          IMAGE_TAG=${{ needs.build.outputs.image_tag }}
+          CURRENT_TAG=$(yq "${{ env.IMAGE_KEY }}" ${{ env.VALUES_FILE }})
+          yq -i "${{ env.IMAGE_KEY }} = \"${IMAGE_TAG}\"" ${{ env.VALUES_FILE }}
+          echo "Updated: ${CURRENT_TAG} → ${IMAGE_TAG}"
+
+      - name: Commit and push to platform-gitops
+        run: |
+          IMAGE_TAG=${{ needs.build.outputs.image_tag }}
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ${{ env.VALUES_FILE }}
+          git diff --staged --quiet && echo "No changes" && exit 0
+          git commit -m "deploy(prabasaari): ${IMAGE_TAG}
+
+          App: prabasaari
+          Image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${IMAGE_TAG}
+          Triggered by: ${{ github.repository }}@${{ github.sha }}"
+          git pull --rebase origin ${{ env.DEPLOY_BRANCH }}
+          git push origin ${{ env.DEPLOY_BRANCH }}
+
+          echo "### GitOps Deploy Triggered" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| App | \`prabasaari\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | \`${IMAGE_TAG}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deploy Repo | \`${{ env.DEPLOY_REPO }}@${{ env.DEPLOY_BRANCH }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| ArgoCD Sync | ~3 minutes |" >> $GITHUB_STEP_SUMMARY

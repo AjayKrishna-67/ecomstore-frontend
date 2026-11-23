@@ -1,0 +1,97 @@
+'use client';
+
+import { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import Link from 'next/link';
+
+// A simple "Reveal" component for the title animation.
+function Reveal({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-100px' }}
+      transition={{ duration: 0.5 }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+interface SweetTreatsItem {
+  id: string;
+  name: string;
+  slug: string;
+  featuredAsset?: { id?: string; preview: string } | null;
+}
+
+export function SweetTreatsSection({ collections, linkPrefix = '/collections' }: { collections: SweetTreatsItem[]; linkPrefix?: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start end', 'end start'],
+  });
+
+  // This smoothly moves the strip horizontally as you scroll the page vertically
+const x = useTransform(scrollYProgress, [0, 1], ['1%', '-10%']);
+  return (
+    <section ref={containerRef} className="py-10 lg:py-20 overflow-hidden bg-amber-50/50">
+      <Reveal>
+        <div className="text-center mb-12 px-4">
+          <h1 className="text-3xl sm:text-5xl font-semibold uppercase text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.45)]">
+            Sweet Treats</h1>
+          <h2 className="text-base sm:text-lg italic font-normal text-gray-900 mt-1">
+            Explore our curated collections of indulgent desserts and handcrafted candies.
+          </h2>
+        </div>
+      </Reveal>
+
+      <div className="relative">
+        <motion.div
+          className="flex gap-6 md:gap-8 px-6 md:px-8"
+          style={{ x }} // This applies the automatic scroll effect
+          drag="x" // This makes the strip draggable
+          dragConstraints={{ left: -1000, right: 1000 }} // Adjust drag limits as needed
+          dragElastic={0.1}
+        >
+          {collections.filter((c) => c.featuredAsset?.preview).map((collection) => (
+            <motion.div
+              key={collection.id}
+              className="flex-shrink-0 w-64 md:w-80 group cursor-pointer"
+              whileHover={{ scale: 1.03 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Link href={`${linkPrefix}/${collection.slug}`} prefetch={true}>
+                <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-lg">
+                  <img
+                    src={`${collection.featuredAsset?.preview}?w=400&h=500&format=webp`}
+                    alt={collection.name}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300" />
+
+                  <div className="absolute inset-0 flex items-center justify-center p-4">
+                    <motion.div
+                      className="text-center text-white"
+                      initial={{ opacity: 0.9 }}
+                      whileHover={{ opacity: 1, scale: 1.05 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <h3 className="text-2xl md:text-3xl font-semibold tracking-wide drop-shadow-md">
+                        {collection.name}
+                      </h3>
+                    </motion.div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+
+      <div className="text-center mt-10">
+        <p className="text-sm text-stone-500">← Drag to explore →</p>
+      </div>
+    </section>
+  );
+}

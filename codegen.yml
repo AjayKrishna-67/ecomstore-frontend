@@ -1,0 +1,36 @@
+overwrite: true
+schema:
+  - "${VENDURE_API_URL: https://prabhasaaridesigns.com/shop-api }"
+  # This is the additional schema extension that would be present it
+  # the Stripe playment plugin is enabled on the Vendure server. Added
+  # manually here to allow codegen to work regardless.
+  - 'type Mutation { createStripePaymentIntent: String }'
+  # This is the additional schema extension that would be present it
+  # the Braintree playment plugin is enabled on the Vendure server. Added
+  # manually here to allow codegen to work regardless.
+  - 'type Query { generateBraintreeClientToken: String }'
+  # Referral system schema extensions (backend Vendure referral plugin)
+  - 'enum ReferralStatus { REGISTERED ELIGIBLE CLAIMED EXPIRED }'
+  - 'type Referral { id: ID! createdAt: DateTime! referralNumber: Int! referrer: Customer! referredCustomer: Customer! order: Order status: ReferralStatus! points: Int! isScratched: Boolean! note: String }'
+  - 'type ReferralList { items: [Referral!]! totalItems: Int! }'
+  - 'type ReferralChannelPoints { id: ID! points: Int! }'
+  - 'type Query { myReferrals(take: Int, skip: Int, status: ReferralStatus): ReferralList! earnedScratchCards(take: Int, skip: Int): ReferralList! scratchedCards(take: Int, skip: Int): ReferralList! referralChannelPoints: ReferralChannelPoints }'
+  - 'type Mutation { registerReferral(referrerId: ID!): Referral! scratchReferralCard(referralNumber: Int!): Referral! }'
+documents:
+  - "providers/**/*.{ts,tsx}"
+  - "!generated/*"
+  - "!lib/hygraph.ts"
+config:
+  scalars:
+    Money: number
+  skipDocumentsValidation:
+    skipValidationAgainstSchema: true
+generates:
+  generated/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-generic-sdk
+  generated/schema.graphql:
+    plugins:
+      - schema-ast

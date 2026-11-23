@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm run:*)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -r cancel-order /home/kaaikani/next-theme/app --include=*.ts --include=*.tsx)",
+      "Bash(grep -r \"orderHistory\\\\|order.*history\\\\|history.*order\" /home/kaaikani/next-theme/app --include=*.ts --include=*.tsx)",
+      "Bash(grep -r \"fetch.*POST\\\\|fetch.*method.*POST\" /home/kaaikani/next-theme/components/account --include=*.tsx)",
+      "Bash(grep -r 'use server' /home/kaaikani/next-theme/app --include=*.ts --include=*.tsx)",
+      "Bash(ls -la /home/kaaikani/next-theme/app/\\\\\\(account\\\\\\)/account/history/)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(npx tsc:*)",
+      "Bash(grep -E \"\\\\.\\(md|txt\\)$\")",
+      "Bash(git rm:*)"
+    ]
+  }
+}

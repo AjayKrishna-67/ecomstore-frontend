@@ -1,0 +1,30 @@
+# Trivy ignore file — accepted vulnerabilities with rationale.
+#
+# POLICY: These are all in `next` 14.2.35, which is the NEWEST release in the
+# 14.x line — so there is NO patch available within our current major version.
+# Every fix below lands only in Next.js 15.x. We have chosen to mitigate now
+# (see next.config.js image-optimizer hardening) and schedule the 14 -> 15.5.x
+# major upgrade as a separate, fully-tested effort. The CI Trivy step is
+# informational (exit-code: 0), so these never block a deploy.
+#
+# REMOVE this whole file once Next.js is upgraded to >= 15.5.16.
+# Last reviewed: 2026-06-06
+
+# RSC HTTP request deserialization -> DoS (fixed: next 15.0.8). App uses RSC.
+GHSA-h25m-26qc-wcjf
+
+# Denial of Service with Server Components (fixed: next 15.5.15). App uses RSC.
+GHSA-q4gf-8mx6-v5v3
+
+# Denial of Service with Server Components (fixed: next 15.5.16). App uses RSC.
+GHSA-8h8q-6873-q5fj
+
+# SSRF in apps using WebSocket upgrades (fixed: next 15.5.16). Low relevance:
+# this app does not handle WebSocket upgrades through Next.
+GHSA-c4j6-fc7j-m34r
+CVE-2026-44578
+
+# Middleware/Proxy bypass in PAGES ROUTER apps using i18n (fixed: next 15.5.16).
+# Not applicable: this app is App Router only (no `pages/` dir, no i18n config).
+GHSA-36qx-fr4f-26g5
+CVE-2026-44573
